@@ -1,1 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Picky Picky Mabelane – Complete Demo (Shop + Voting + Gas Card)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: radial-gradient(circle at 10% 20%, #0a0a1a, #03030c);
+      color: #eee;
+      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      padding: 1rem;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(10,10,30,0.6); backdrop-filter: blur(12px);
+      padding: 1rem 2rem; border-radius: 60px; margin-bottom: 2rem;
+      border: 1px solid rgba(5,217,232,0.3);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .logo { font-size: 1.8rem; font-weight: 800; background: linear-gradient(135deg, #ff2a6d, #05d9e8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    button {
+      background: transparent; border: 1px solid #05d9e8; color: #05d9e8;
+      padding: 0.5rem 1.2rem; border-radius: 40px; font-weight: 600; cursor: pointer;
+      transition: 0.2s;
+    }
+    button.primary { background: #ff2a6d; border-color: #ff2a6d; color: white; }
+    button.primary:hover { background: #ff5a8f; transform: scale(1.02); }
+    button.danger { border-color: #ffaa00; color: #ffaa00; }
+    .card {
+      background: rgba(20,20,50,0.7); backdrop-filter: blur(8px);
+      border-radius: 28px; padding: 1.5rem; margin-bottom: 1.5rem;
+      border: 1px solid rgba(5,217,232,0.2);
+    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 1.2rem; }
+    .stat-card { background: #0f0f25; border-radius: 20px; padding: 1rem; text-align: center; }
+    .video-tile { background: #1e1e3a; border-radius: 20px; aspect-ratio: 4/3; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #3a3a6a; position: relative; padding: 0.5rem; text-align: center; }
+    .video-tile.top3 { border: 2px solid #05d9e8; box-shadow: 0 0 8px #05d9e8; }
+    .video-tile.shielded { border: 2px solid #00ffaa; }
+    input, select, textarea { background: #1e1e3e; border: 1px solid #3a3a6a; padding: 0.5rem; border-radius: 20px; color: white; width: 100%; margin: 0.5rem 0; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #05d9e8; padding: 0.5rem; text-align: left; }
+    .status-pending { color: orange; }
+    .status-approved { color: lime; }
+    .status-rejected { color: red; }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .tab-btn { background: #1e1e3e; border: none; padding: 0.5rem 1rem; border-radius: 30px; cursor: pointer; }
+    .tab-btn.active { background: #ff2a6d; color: white; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    .shop-items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 0.8rem; margin-top: 0.5rem; }
+    .shop-item { background: #1e1e3a; border-radius: 16px; padding: 0.8rem; text-align: center; }
+    .shop-item .price { color: #05d9e8; font-weight: bold; margin: 0.5rem 0; }
+    .chat-feed { background: #050510; height: 150px; overflow-y: auto; padding: 0.5rem; border-radius: 16px; font-size: 0.8rem; margin-top: 1rem; }
+    .vote-bar { margin: 0.5rem 0; }
+    .contestant-option { display: flex; align-items: center; gap: 0.5rem; margin: 0.3rem 0; cursor: pointer; }
+    .vote-count { margin-left: auto; font-size: 0.7rem; }
+    .live-layout { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .live-video { flex: 3; min-width: 250px; }
+    .live-sidebar { flex: 2; min-width: 260px; }
+    @media (max-width: 800px) { .live-layout { flex-direction: column; } }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">🍑 PICKY PICKY MABELANE – COMPLETE DEMO</div>
+    <div><span id="userName">Guest</span> | Wallet: R<span id="walletDisplay">200</span> | <button id="loginMock">Mock Login</button></div>
+  </div>
 
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="home">Home</button>
+    <button class="tab-btn" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="live">Live Session (Demo)</button>
+    <button class="tab-btn" data-tab="audition">🎤 Presenter Audition</button>
+    <button class="tab-btn" data-tab="admin">🛡️ Admin (Auditions)</button>
+  </div>
+
+  <!-- HOME -->
+  <div id="home" class="tab-pane active">
+    <div class="card" style="text-align:center;">
+      <h1>Pick a date. <span style="color:#05d9e8;">Gas your rivals.</span><br>Pay the fine.</h1>
+      <p>Live 15min dating showdown. Gas Card = R100 fine if caught lying. <br>🛒 Buy power-ups, 🗳️ vote for fan favorites, 🔮 predict winner!</p>
+      <button class="primary" id="quickJoinPicker">Join as Picker (R50)</button>
+      <button class="primary" style="background:#b026ff;" id="quickJoinPicked">Join as Picked (R20)</button>
+    </div>
+    <div class="card"><h3>How it works</h3><div class="grid"><div>1️⃣ Sign up</div><div>2️⃣ Be Picker/Picked</div><div>3️⃣ Top 3 plead + Gas Card</div><div>4️⃣ Win date or pay fine</div><div>🛒 Buy drama items</div><div>🗳️ Vote & predict</div></div></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="tab-pane">
+    <div class="card"><h3>📊 Your Stats</h3><div class="grid" id="statsGrid"></div></div>
+    <div class="card"><h3>Upcoming Sessions</h3><div>12:15 SAST – <button class="mockJoin">Join as Picker (R50)</button> <button class="mockJoinPicked">Join as Picked (R20)</button></div><div>17:30 SAST – <button class="mockJoin">Join as Picker</button> <button class="mockJoinPicked">Join as Picked</button></div></div>
+    <div class="card"><h3>🏆 Leaderboard</h3><div id="leaderboard"></div></div>
+    <div class="card"><h3>⚠️ Hall of Shame</h3><div id="hallOfShame"></div></div>
+  </div>
+
+  <!-- LIVE SESSION DEMO (Full Shop + Voting + Gas Card) -->
+  <div id="live" class="tab-pane">
+    <div class="card">
+      <h3>🔴 LIVE: Session #42 – Plea Round Active</h3>
+      <div class="live-layout">
+        <div class="live-video">
+          <div class="grid" id="contestantsGrid" style="grid-template-columns: repeat(2,1fr);"></div>
+          <div class="chat-feed" id="liveChat"></div>
+        </div>
+        <div class="live-sidebar">
+          <div id="gasControl" style="margin-bottom:1rem; display:none;">
+            <h4>🔥 Your Gas Card (Top 3 only)</h4>
+            <label>Gas % (rest = Shela): <input type="range" id="gasSlider" min="0" max="100" value="0"></label>
+            <span id="gasPercentVal">0%</span>
+            <button id="useGasBtn">Use Gas Card</button>
+            <small>If caught lying: R100 fine</small>
+          </div>
+          <div id="shopPanel"></div>
+          <div id="votingPanel"></div>
+          <div id="predictionPanel"></div>
+          <div id="presenterControls" style="display:none; margin-top:1rem;">
+            <h4>Presenter Controls</h4>
+            <button id="setTop3Btn">Set Random Top 3</button>
+            <button id="dqBtn">Disqualify Selected</button>
+            <button id="endSessionBtn">End Session</button>
+          </div>
+        </div>
+      </div>
+      <button id="resetLiveBtn" class="danger">Reset Session</button>
+    </div>
+  </div>
+
+  <!-- AUDITION -->
+  <div id="audition" class="tab-pane">
+    <div class="card"><h3>🎤 Become a Presenter</h3><p>Send two 1-2 min videos:</p><ul><li><strong>Video 1:</strong> Read our script – we'll use for TikTok promo</li><li><strong>Video 2:</strong> Tell us about yourself</li></ul><button id="downloadScriptBtn" class="primary">📄 Download Script (PDF)</button>
+    <form id="auditionForm"><input type="text" id="audFullName" placeholder="Full name" required><input type="email" id="audEmail" placeholder="Email" required><input type="tel" id="audPhone" placeholder="Phone"><input type="url" id="audVideo1" placeholder="Link to Video 1 (YouTube/Drive)" required><input type="url" id="audVideo2" placeholder="Link to Video 2" required><button type="submit" class="primary">Submit Audition</button></form><div id="auditionStatus"></div></div>
+  </div>
+
+  <!-- ADMIN AUDITIONS -->
+  <div id="admin" class="tab-pane">
+    <div class="card"><h3>🛡️ Admin – Audition Submissions</h3><button id="refreshAuditions">Refresh</button><table id="auditionsTable"><thead><tr><th>Name</th><th>Email</th><th>Video 1</th><th>Video 2</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+  </div>
+</div>
+
+<script>
+  // ---------- DATA & HELPERS ----------
+  let currentUser = JSON.parse(localStorage.getItem('pickyUser')) || { id: 'user1', name: 'Thabo', wallet: 200, stats: { timesPicked:0, datesWon:0, gasThrown:0, finesPaid:0 }, role: 'viewer' };
+  let submissions = JSON.parse(localStorage.getItem('auditionSubmissions')) || [];
+  let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [{ name: 'Ayanda', datesWon:7 }, { name: 'Bongani', datesWon:5 }];
+  let hallOfShame = JSON.parse(localStorage.getItem('hallOfShame')) || [{ name: 'Thabo D.', dqCount:3, banned:true }, { name: 'Lindiwe', dqCount:2, remainingBans:1 }];
+  let votes = JSON.parse(localStorage.getItem('votes')) || [];
+  let predictions = JSON.parse(localStorage.getItem('predictions')) || [];
+  let liveState = { top3: [], round: 'plea', contestants: [], shields: {}, doubts: {}, winner: null };
+  const sessionId = 'demo-session-1';
+
+  // Shop items
+  const shopItems = {
+    plea_boost: { name: 'Plea Boost', price: 15, desc: 'Extend plea time' },
+    gas_shield: { name: 'Gas Shield', price: 25, desc: 'Block one Gas Card' },
+    side_eye: { name: 'Side-Eye', price: 12, desc: 'Add doubt to contestant' },
+    clap_back: { name: 'Clap Back', price: 10, desc: 'Remove one doubt' },
+    mystery_gas: { name: 'Mystery Gas', price: 7, desc: 'Random 10-100% Gas' },
+    rose_rain: { name: 'Rose Rain', price: 20, desc: 'Emoji rain 🌹' },
+    super_vote: { name: 'Super Vote', price: 10, desc: 'Vote counts x10' }
+  };
+
+  function saveUser() { localStorage.setItem('pickyUser', JSON.stringify(currentUser)); updateDashboardUI(); }
+  function saveSubmissions() { localStorage.setItem('auditionSubmissions', JSON.stringify(submissions)); }
+  function saveVotes() { localStorage.setItem('votes', JSON.stringify(votes)); }
+  function savePredictions() { localStorage.setItem('predictions', JSON.stringify(predictions)); }
+
+  function updateDashboardUI() {
+    document.getElementById('userName').innerText = currentUser.name;
+    document.getElementById('walletDisplay').innerText = currentUser.wallet;
+    if(document.getElementById('statsGrid')) {
+      document.getElementById('statsGrid').innerHTML = `
+        <div class="stat-card">Times Picked: ${currentUser.stats.timesPicked}</div>
+        <div class="stat-card">Dates Won: ${currentUser.stats.datesWon}</div>
+        <div class="stat-card">Gas Thrown: ${currentUser.stats.gasThrown}</div>
+        <div class="stat-card">Fines Paid: R${currentUser.stats.finesPaid}</div>
+      `;
+      document.getElementById('leaderboard').innerHTML = leaderboard.map(l => `<div>${l.name} – ${l.datesWon} dates</div>`).join('');
+      document.getElementById('hallOfShame').innerHTML = hallOfShame.map(h => `<div>${h.name} – DQ: ${h.dqCount} (${h.banned ? 'Permanent' : `${h.remainingBans} left`})</div>`).join('');
+    }
+  }
+
+  function addChatMsg(msg) {
+    let chatDiv = document.getElementById('liveChat');
+    if(chatDiv) chatDiv.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+  }
+
+  // Contestants
+  const defaultContestants = [
+    { id: 'c1', name: 'Lerato' }, { id: 'c2', name: 'Sipho' }, { id: 'c3', name: 'Thandi' },
+    { id: 'c4', name: 'Musa' }, { id: 'c5', name: 'Naledi' }
+  ];
+
+  function renderLive() {
+    let container = document.getElementById('contestantsGrid');
+    if(!container) return;
+    if(!liveState.contestants.length) liveState.contestants = [...defaultContestants];
+    container.innerHTML = liveState.contestants.map(c => `
+      <div class="video-tile ${liveState.top3.includes(c.id) ? 'top3' : ''} ${liveState.shields[c.id] ? 'shielded' : ''}" data-id="${c.id}">
+        <strong>${c.name}</strong><br>
+        ${liveState.doubts[c.id] ? `<span style="color:#ffaa00;">😒 ${liveState.doubts[c.id]}</span>` : ''}
+        ${liveState.top3.includes(c.id) ? '<br>⭐ TOP 3' : ''}
+      </div>
+    `).join('');
+    let isTop3 = currentUser && liveState.top3.includes(currentUser.id);
+    document.getElementById('gasControl').style.display = isTop3 ? 'block' : 'none';
+    document.getElementById('presenterControls').style.display = currentUser.role === 'presenter' ? 'block' : 'none';
+    renderShop();
+    renderVoting();
+    renderPrediction();
+  }
+
+  function renderShop() {
+    let container = document.getElementById('shopPanel');
+    if(!container) return;
+    container.innerHTML = `<div class="card"><h3>🛒 Shop</h3><div class="shop-items-grid">` +
+      Object.entries(shopItems).map(([key, item]) => `
+        <div class="shop-item">
+          <b>${item.name}</b><br>${item.desc}<br><span class="price">R${item.price}</span>
+          <button class="buy-item" data-item="${key}">Buy</button>
+        </div>
+      `).join('') +
+      `</div></div>`;
+    document.querySelectorAll('.buy-item').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        let itemKey = btn.dataset.item;
+        let item = shopItems[itemKey];
+        if(currentUser.wallet < item.price) { alert('Insufficient funds'); return; }
+        let target = prompt('Enter contestant name (or ID):');
+        if(!target) return;
+        currentUser.wallet -= item.price;
+        saveUser();
+        addChatMsg(`${currentUser.name} bought ${item.name} targeting ${target}`);
+        if(itemKey === 'gas_shield') { liveState.shields[target] = true; renderLive(); addChatMsg(`🛡️ ${target} is now shielded!`); }
+        if(itemKey === 'side_eye') { liveState.doubts[target] = (liveState.doubts[target]||0)+1; renderLive(); addChatMsg(`😒 ${target} got a Side-Eye!`); }
+        if(itemKey === 'rose_rain') addChatMsg(`🌹 Rose rain over ${target}!`);
+      });
+    });
+  }
+
+  function renderVoting() {
+    let container = document.getElementById('votingPanel');
+    if(!container) return;
+    let tally = {};
+    votes.filter(v => v.sessionId === sessionId && v.category === 'fan_favorite').forEach(v => { tally[v.target] = (tally[v.target]||0) + (v.weight||1); });
+    container.innerHTML = `<div class="card"><h3>🗳️ Fan Favorite Vote</h3>` +
+      liveState.contestants.map(c => `<label class="contestant-option"><input type="radio" name="voteTarget" value="${c.id}"> ${c.name} <span class="vote-count">${tally[c.id] || 0} votes</span></label>`).join('') +
+      `<div style="margin-top:0.5rem;"><button id="submitVoteBtn">Vote (1x)</button> <button id="superVoteBtn">Super Vote (x10) – R10</button></div></div>`;
+    document.getElementById('submitVoteBtn')?.addEventListener('click', () => {
+      let selected = document.querySelector('input[name="voteTarget"]:checked');
+      if(!selected) return alert('Select a contestant');
+      votes.push({ sessionId, voter: currentUser.id, target: selected.value, category: 'fan_favorite', weight: 1 });
+      saveVotes();
+      addChatMsg(`${currentUser.name} voted for ${selected.value}`);
+      renderVoting();
+    });
+    document.getElementById('superVoteBtn')?.addEventListener('click', () => {
+      if(currentUser.wallet < 10) { alert('Insufficient funds'); return; }
+      let selected = document.querySelector('input[name="voteTarget"]:checked');
+      if(!selected) return alert('Select a contestant');
+      currentUser.wallet -= 10;
+      votes.push({ sessionId, voter: currentUser.id, target: selected.value, category: 'fan_favorite', weight: 10 });
+      saveVotes();
+      saveUser();
+      addChatMsg(`${currentUser.name} cast SUPER VOTE for ${selected.value} (x10)!`);
+      renderVoting();
+    });
+  }
+
+  function renderPrediction() {
+    let container = document.getElementById('predictionPanel');
+    if(!container) return;
+    container.innerHTML = `<div class="card"><h3>🔮 Predict Winner (R5)</h3><select id="predictSelect"><option value="">-- Choose --</option>${liveState.contestants.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select><button id="predictBtn">Submit Prediction</button></div>`;
+    document.getElementById('predictBtn')?.addEventListener('click', () => {
+      let pred = document.getElementById('predictSelect').value;
+      if(!pred) return alert('Select a contestant');
+      if(currentUser.wallet < 5) { alert('Insufficient funds'); return; }
+      currentUser.wallet -= 5;
+      predictions.push({ sessionId, user: currentUser.id, predicted: pred });
+      savePredictions();
+      saveUser();
+      addChatMsg(`${currentUser.name} predicted ${pred} as winner!`);
+    });
+  }
+
+  function mockJoinPicker() { if(currentUser.wallet>=50){ currentUser.wallet-=50; currentUser.stats.timesPicked++; saveUser(); addChatMsg('Joined as Picker!'); } else alert('Insufficient funds'); }
+  function mockJoinPicked() { if(currentUser.wallet>=20){ currentUser.wallet-=20; currentUser.stats.timesPicked++; saveUser(); addChatMsg('Joined as Picked!'); } else alert('Insufficient funds'); }
+
+  // Audition & Admin
+  function renderAdminTable() {
+    let tbody = document.querySelector('#auditionsTable tbody');
+    if(!tbody) return;
+    tbody.innerHTML = '';
+    submissions.forEach((sub, idx) => {
+      let row = tbody.insertRow();
+      row.insertCell(0).innerText = sub.full_name;
+      row.insertCell(1).innerText = sub.email;
+      row.insertCell(2).innerHTML = `<a href="${sub.video1_url}" target="_blank">Watch</a>`;
+      row.insertCell(3).innerHTML = `<a href="${sub.video2_url}" target="_blank">Watch</a>`;
+      row.insertCell(4).innerHTML = `<span class="status-${sub.status}">${sub.status}</span>`;
+      let actions = row.insertCell(5);
+      actions.innerHTML = `<button onclick="window.updateStatus(${idx}, 'approved')">Approve</button> <button onclick="window.updateStatus(${idx}, 'rejected')">Reject</button> <button onclick="window.deleteSubmission(${idx})">Del</button>`;
+    });
+  }
+  window.updateStatus = (idx, newStatus) => { submissions[idx].status = newStatus; saveSubmissions(); renderAdminTable(); };
+  window.deleteSubmission = (idx) => { submissions.splice(idx,1); saveSubmissions(); renderAdminTable(); };
+
+  function initLive() {
+    liveState.contestants = [...defaultContestants];
+    liveState.top3 = ['c1','c3','c5'];
+    liveState.shields = {};
+    liveState.doubts = {};
+    liveState.winner = null;
+    renderLive();
+    addChatMsg('Session started! Top 3: Lerato, Thandi, Naledi');
+  }
+
+  // Event listeners
+  document.getElementById('loginMock')?.addEventListener('click', () => {
+    let name = prompt('Enter name (mock login)');
+    if(name) { currentUser.name = name; saveUser(); updateDashboardUI(); }
+  });
+  document.getElementById('quickJoinPicker')?.addEventListener('click', mockJoinPicker);
+  document.getElementById('quickJoinPicked')?.addEventListener('click', mockJoinPicked);
+  document.querySelectorAll('.mockJoin').forEach(btn => btn.addEventListener('click', mockJoinPicker));
+  document.querySelectorAll('.mockJoinPicked').forEach(btn => btn.addEventListener('click', mockJoinPicked));
+  document.getElementById('useGasBtn')?.addEventListener('click', () => {
+    let percent = parseInt(document.getElementById('gasSlider').value);
+    let target = prompt('Enter contestant ID (c1-c5) or name:');
+    if(!target) return;
+    if(liveState.shields[target]) { addChatMsg(`Gas blocked! ${target} has a shield.`); return; }
+    addChatMsg(`${currentUser.name} throws ${percent}% Gas at ${target}!`);
+    if(percent > 70 && Math.random() < 0.4) {
+      addChatMsg(`⚠️ DISQUALIFIED! Fine R100 charged.`);
+      currentUser.wallet -= 100;
+      currentUser.stats.finesPaid += 100;
+      currentUser.stats.gasThrown++;
+      saveUser();
+    } else {
+      addChatMsg(`🔥 Gas accepted.`);
+      currentUser.stats.gasThrown++;
+      saveUser();
+    }
+  });
+  document.getElementById('setTop3Btn')?.addEventListener('click', () => {
+    let shuffled = [...liveState.contestants].sort(()=>0.5-Math.random());
+    liveState.top3 = shuffled.slice(0,3).map(c=>c.id);
+    renderLive();
+    addChatMsg(`Presenter set new Top 3: ${liveState.top3.map(id=>liveState.contestants.find(c=>c.id===id).name).join(', ')}`);
+  });
+  document.getElementById('dqBtn')?.addEventListener('click', () => {
+    let target = prompt('Contestant ID to disqualify:');
+    if(target && liveState.contestants.some(c=>c.id===target)) {
+      addChatMsg(`🚫 ${target} DISQUALIFIED! Fine R100.`);
+      currentUser.wallet -= 100;
+      currentUser.stats.finesPaid += 100;
+      saveUser();
+    }
+  });
+  document.getElementById('endSessionBtn')?.addEventListener('click', () => {
+    let winner = liveState.top3[Math.floor(Math.random()*liveState.top3.length)];
+    liveState.winner = winner;
+    addChatMsg(`🏆 WINNER: ${liveState.contestants.find(c=>c.id===winner).name}!`);
+  });
+  document.getElementById('resetLiveBtn')?.addEventListener('click', initLive);
+  document.getElementById('downloadScriptBtn')?.addEventListener('click', () => {
+    const scriptText = `PICKY PICKY SCRIPT – 2 min promo`;
+    const blob = new Blob([scriptText], {type:'application/pdf'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'PickyPicky_Script.pdf';
+    a.click();
+  });
+  document.getElementById('auditionForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    submissions.push({ id: Date.now(), full_name: document.getElementById('audFullName').value, email: document.getElementById('audEmail').value, phone: document.getElementById('audPhone').value, video1_url: document.getElementById('audVideo1').value, video2_url: document.getElementById('audVideo2').value, status: 'pending' });
+    saveSubmissions();
+    document.getElementById('auditionStatus').innerHTML = '<span style="color:lime;">Submitted! We’ll review.</span>';
+    e.target.reset();
+    renderAdminTable();
+  });
+  document.getElementById('refreshAuditions')?.addEventListener('click', renderAdminTable);
+
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      let tab = btn.dataset.tab;
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      if(tab === 'dashboard') updateDashboardUI();
+      if(tab === 'live') initLive();
+      if(tab === 'admin') renderAdminTable();
+    });
+  });
+
+  updateDashboardUI();
+  renderAdminTable();
+  initLive();
+</script>
+</body>
+</html>
