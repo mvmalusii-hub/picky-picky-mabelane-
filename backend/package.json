@@ -1,0 +1,37 @@
+{
+  "name": "picky-picky-backend",
+  "version": "1.0.0",
+  "description": "Backend for Picky Picky Mabelane dating game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "migrate": "knex migrate:latest",
+    "seed": "knex seed:run",
+    "test": "jest",
+    "lint": "eslint src/",
+    "cron:cleanup": "node scripts/cleanupSessions.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "pg": "^8.10.0",
+    "knex": "^2.4.2",
+    "jsonwebtoken": "^9.0.0",
+    "bcrypt": "^5.1.0",
+    "stripe": "^12.1.1",
+    "livekit-server-sdk": "^1.2.0",
+    "nodemailer": "^6.9.1",
+    "helmet": "^7.0.0",
+    "morgan": "^1.10.0",
+    "express-validator": "^6.15.0",
+    "redis": "^4.6.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22",
+    "jest": "^29.5.0",
+    "supertest": "^6.3.3",
+    "eslint": "^8.40.0"
+  }
+}
