@@ -1,0 +1,66 @@
+services:
+  - type: web
+    name: picky-backend
+    runtime: node
+    plan: starter
+    repo: https://github.com/YOUR_USERNAME/picky-picky-mabelane
+    branch: main
+    rootDir: backend
+    buildCommand: npm ci && npm run migrate
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: picky-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRY
+        value: 7d
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      - key: LIVEKIT_WS_URL
+        sync: false
+      - key: FRONTEND_URL
+        value: https://picky-picky-mabelane.vercel.app
+      - key: REDIS_URL
+        fromService:
+          name: picky-redis
+          type: redis
+          property: connectionString
+    healthCheckPath: /health
+    autoDeploy: true
+
+  - type: postgres
+    name: picky-db
+    plan: starter
+    databaseName: picky_picky_db
+    user: picky_admin
+
+  - type: redis
+    name: picky-redis
+    plan: starter
+    maxmemoryPolicy: noeviction
+
+  - type: cron
+    name: picky-cleanup
+    schedule: "0 */6 * * *"
+    runtime: node
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm run cron:cleanup
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: picky-db
+          property: connectionString
